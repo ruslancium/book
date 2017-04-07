@@ -8,22 +8,20 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.NamingException;
+
 import name.ruslan.model.Author;
 import name.ruslan.model.Book;
 import name.ruslan.model.Category;
+import ruslan.name.proxy.ConnectionPool;
+import ruslan.name.proxy.ProxyConnection;
 
 public class BookDAOImpl implements BookDAO {
 	
-	static {
-		try {
-			Class.forName("com.mysql.jdbc.Driver");			
-		} catch (ClassNotFoundException e) {
-			
-		}
-	}
-	
-	private Connection getConnection() throws SQLException {
-		return DriverManager.getConnection("jdbc:mysql://localhost:3306/books", "root", "blackmetal1979");
+
+	private Connection getConnection() throws SQLException, InterruptedException, NamingException {
+		ConnectionPool<ProxyConnection> pool = new ConnectionPool<>(3, "java:comp/env/jdbc/books");		
+		return pool.getConnection();
 	}
 	
 	private void closeConnection(Connection connection) {
@@ -66,6 +64,12 @@ public class BookDAOImpl implements BookDAO {
 			}
 		}
 		catch (SQLException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		finally {
@@ -112,6 +116,12 @@ public class BookDAOImpl implements BookDAO {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		finally {
 			closeConnection(connection);
@@ -139,6 +149,12 @@ public class BookDAOImpl implements BookDAO {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		finally {
 			closeConnection(connection);
@@ -165,5 +181,4 @@ public class BookDAOImpl implements BookDAO {
 		// TODO Auto-generated method stub
 		
 	}
-
 }
