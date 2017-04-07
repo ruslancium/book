@@ -13,8 +13,8 @@ import javax.naming.NamingException;
 import name.ruslan.model.Author;
 import name.ruslan.model.Book;
 import name.ruslan.model.Category;
-import ruslan.name.proxy.ConnectionPool;
-import ruslan.name.proxy.ProxyConnection;
+import name.ruslan.proxy.ConnectionPool;
+import name.ruslan.proxy.ProxyConnection;
 
 public class BookDAOImpl implements BookDAO {
 	
@@ -42,10 +42,10 @@ public class BookDAOImpl implements BookDAO {
 		
 		String sql = "select * from book inner join author on book.id = author.book_id";
 		
-		Connection connection = null;
-		try {
-			connection = getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql);
+		Connection connection = connection = getConnection();
+		try(PreparedStatement statement = connection.prepareStatement(sql)) {
+			
+			
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				Book book = new Book();
@@ -73,6 +73,7 @@ public class BookDAOImpl implements BookDAO {
 			e.printStackTrace();
 		}
 		finally {
+			
 			closeConnection(connection);
 		}
 		
