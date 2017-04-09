@@ -1,5 +1,6 @@
 package name.ruslan.dao;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -13,28 +14,12 @@ import javax.naming.NamingException;
 import name.ruslan.model.Author;
 import name.ruslan.model.Book;
 import name.ruslan.model.Category;
+import name.ruslan.proxy.ConnectionManager;
 import name.ruslan.proxy.ConnectionPool;
 import name.ruslan.proxy.ProxyConnection;
 
 public class BookDAOImpl implements BookDAO {
 	
-
-	private Connection getConnection() throws SQLException, InterruptedException, NamingException {
-		ConnectionPool<ProxyConnection> pool = new ConnectionPool<>(3, "java:comp/env/jdbc/books");		
-		return pool.getConnection();
-	}
-	
-	private void closeConnection(Connection connection) {
-		if (connection == null) {
-			return;
-		}
-		
-		try {
-			connection.close();
-		}
-		catch (SQLException e) {}
-	}
-
 	@Override
 	public List<Book> findAllBooks() {
 		List<Book> result = new ArrayList<>();
@@ -42,9 +27,9 @@ public class BookDAOImpl implements BookDAO {
 		
 		String sql = "select * from book inner join author on book.id = author.book_id";
 		
-		Connection connection = connection = getConnection();
-		try(PreparedStatement statement = connection.prepareStatement(sql)) {
-			
+		Connection connection = ConnectionManager.getInstance().getConnection();
+		
+		try(PreparedStatement statement = connection.prepareStatement(sql)) {			
 			
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
@@ -65,16 +50,14 @@ public class BookDAOImpl implements BookDAO {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		finally {
-			
-			closeConnection(connection);
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
 		}
 		
 		return result;
@@ -94,10 +77,10 @@ public class BookDAOImpl implements BookDAO {
 				+ "%'"
 				+ " or last_name like '%" + keyWord.trim() + "%'";
 		
-		Connection connection = null;
-		try {
-			connection = getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql);
+		Connection connection = ConnectionManager.getInstance().getConnection();;
+				 
+		try (PreparedStatement statement = connection.prepareStatement(sql)){			
+			
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				Book book = new Book();
@@ -117,15 +100,14 @@ public class BookDAOImpl implements BookDAO {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		finally {
-			closeConnection(connection);
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	
 		return result;
@@ -135,11 +117,9 @@ public class BookDAOImpl implements BookDAO {
 	public List<Category> findAllCategories() {
 		List<Category> result = new ArrayList<>();
 		String sql = "select * from category";
-		Connection connection = null;
+		Connection connection = ConnectionManager.getInstance().getConnection();
 		
-		try {
-			connection = getConnection();
-			PreparedStatement statement = connection.prepareStatement(sql);
+		try (PreparedStatement statement = connection.prepareStatement(sql)){			
 			ResultSet resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				Category category = new Category();
@@ -150,15 +130,14 @@ public class BookDAOImpl implements BookDAO {
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		finally {
-			closeConnection(connection);
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	
 		return result;		
